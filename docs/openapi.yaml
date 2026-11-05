@@ -1,30 +1,58 @@
 openapi: 3.1.0
+
 info:
   title: Task API
   version: 1.0.0
+
 servers:
   - url: http://localhost:3000
-    description: Local development servers
+    description: Local development server
+
 tags:
   - name: Tasks
     description: Task-related endpoints
   - name: Monitoring
     description: Operational endpoints, such as health checks
+
 paths:
   /tasks:
     get:
-      summary: List all tasks
+      summary: List tasks with optional completed filtering
       tags:
         - Tasks
+      parameters:
+        - in: query
+          name: completed
+          required: false
+          description: Filter tasks by completion status
+          schema:
+            type: string
+            enum:
+              - 'true'
+              - 'false'
       responses:
         '200':
-          description: OK
+          description: Tasks retrieved successfully
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid completed query parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: string
+
     post:
       summary: Create a new task
       tags:
@@ -56,8 +84,10 @@ paths:
                     items:
                       type: string
                 example:
-                  errors:
-                    - 'Title must be at least 3 characters'
+                  error: Validation failed
+                  details:
+                    - Title must be at least 3 characters
+
   /health:
     get:
       summary: Health Check
@@ -75,6 +105,7 @@ paths:
                   status:
                     type: string
                     example: ok
+
 components:
   schemas:
     Task:
